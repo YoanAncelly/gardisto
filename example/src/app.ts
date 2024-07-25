@@ -9,10 +9,6 @@ function startApp() {
   if (debugMode) {
     console.log('Debug mode is enabled');
   }
-
-  // Simulating usage of an environment variable that might not be set
-  const logLevel = process.env.LOG_LEVEL || 'info';
-  console.log('Log level:', logLevel);
 }
 
 export { startApp };
