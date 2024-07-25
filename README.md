@@ -12,13 +12,13 @@ npm install env-sentinel
 
 To use the `env-sentinel` package, simply require it in your project and call the `envSentinel` function, passing the root directory of your project as an argument.
 
-```javascript
-const { envSentinel } = require('env-sentinel');
+```typescript
+import { envSentinel } from 'env-sentinel';
 
-envSentinel('./path/to/project/root');
+envSentinel({ debug: false });
 ```
 
-The `envSentinel` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will throw an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||`), it will log a warning suggesting that the variable might not be set.
+The `envSentinel` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will log an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||`), it will log a warning suggesting that the variable might not be set.
 
 ## Example
 
