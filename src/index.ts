@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 
-function checkEnvVariables(projectPath: string): void {
+function envSentinel(projectPath: string): void {
   const files = getAllTypeScriptFiles(projectPath);
 
   for (const file of files) {
@@ -58,4 +58,4 @@ function checkEnvVariable(variable: string, node: ts.Node, sourceFile: ts.Source
   }
 }
 
-export { checkEnvVariables };
+export { envSentinel };
