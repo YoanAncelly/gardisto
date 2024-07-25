@@ -1,0 +1,20 @@
+{
+  "name": "env-sentinel",
+  "version": "1.0.0",
+  "description": "Automatically check and verify environment variables in a project",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["environment", "variables", "check", "typescript"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.12"
+  }
+}
