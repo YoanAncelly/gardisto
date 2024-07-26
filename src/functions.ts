@@ -6,65 +6,84 @@ interface CheckEnvVariablesOptions {
 	debug?: boolean;
 }
 
-export function checkEnvVariables(
-	options: CheckEnvVariablesOptions | string = {},
-	projectPath: string = process.cwd(),
-): void {
-	let debug = false;
-	if (typeof options === "string") {
-		projectPath = options;
-	} else {
-		debug = options.debug || false;
-	}
+export const checkEnvVariables = (
+  options: CheckEnvVariablesOptions | string = {},
+  projectPath: string = process.cwd(),
+): string[] => {
+  const { debug, path } = parseOptions(options, projectPath);
+  const log = createLogger(debug);
 
-	function log(...args: any[]) {
-		if (debug) {
-			console.log("[DEBUG]", ...args, "\n");
-		}
-	}
+  log(`Checking environment variables in project path: ${path}`);
+  const files = getAllJSAndTSFiles(path, log);
+  log(`Found ${files.length} JS/TS files to process`);
 
-	log(`Checking environment variables in project path: ${projectPath}`);
-	const files = getAllJSAndTSFiles(projectPath, log);
-	log(`Found ${files.length} JS/TS files to process`);
+  const errors = processFiles(files, log);
 
-	const errors: string[] = [];
+  handleErrors(errors);
+  return errors;
+};
 
-	for (const file of files) {
-		log(`Processing file: ${file}`);
-		const sourceFile = ts.createSourceFile(
-			file,
-			fs.readFileSync(file, "utf-8"),
-			ts.ScriptTarget.Latest,
-			true,
-		);
+const parseOptions = (
+  options: CheckEnvVariablesOptions | string,
+  defaultPath: string,
+): { debug: boolean; path: string } => {
+  if (typeof options === "string") {
+    return { debug: false, path: options };
+  }
+  return { debug: options.debug ?? false, path: defaultPath };
+};
 
-		let envVarsFound = 0;
-		function visit(node: ts.Node) {
-			if (
-				ts.isPropertyAccessExpression(node) &&
-				node.expression.getText() === "process.env"
-			) {
-				const envVar = node.name.getText();
-				envVarsFound++;
-				log(`Found environment variable: ${envVar}`);
-				checkEnvVariable(envVar, node, sourceFile, log, errors);
-			}
-			ts.forEachChild(node, visit);
-		}
-		visit(sourceFile);
-		log(`Found ${envVarsFound} environment variables in ${file}`);
-	}
+const createLogger = (debug: boolean) => (...args: unknown[]): void => {
+  if (debug) {
+    console.log("[DEBUG]", ...args, "\n");
+  }
+};
 
-	if (errors.length > 0) {
-		console.error("Errors found in environment variables:");
-		errors.forEach((error) => console.error(error));
-		process.exit(1); // Gracefully stop the application
-	}
-}
+const createSourceFile = (filePath: string): ts.SourceFile =>
+  ts.createSourceFile(filePath, fs.readFileSync(filePath, 'utf-8'), ts.ScriptTarget.Latest, true);
+
+const findEnvVariables = (sourceFile: ts.SourceFile): string[] => {
+  const envVars: string[] = [];
+  const visitor = (node: ts.Node): void => {
+    if (ts.isPropertyAccessExpression(node) &&
+        node.expression.getText() === 'process.env') {
+      const envVar = node.name.getText();
+      envVars.push(envVar);
+    }
+    ts.forEachChild(node, visitor);
+  };
+  ts.forEachChild(sourceFile, visitor);
+  return envVars;
+};
+
+const processFiles = (
+  files: string[],
+  log: (...args: unknown[]) => void,
+): string[] => {
+  const errors: string[] = [];
+  for (const file of files) {
+    log(`Processing file: ${file}`);
+    const sourceFile = createSourceFile(file);
+    const envVars = findEnvVariables(sourceFile);
+    log(`Found ${envVars.length} environment variables in ${file}`);
+    envVars.forEach(variable =>
+      checkEnvVariable(variable, sourceFile.getChildAt(0), sourceFile, log, errors)
+    );
+  }
+  return errors;
+};
+
+const handleErrors = (errors: string[]): void => {
+  if (errors.length > 0) {
+    console.error("Errors found in environment variables:");
+    errors.forEach((error) => console.error(error));
+    process.exit(1);
+  }
+};
 
 export function getAllJSAndTSFiles(
 	dir: string,
-	log: (...args: any[]) => void,
+	log: (...args: unknown[]) => void,
 ): string[] {
 	log(`Scanning directory: ${dir}`);
 	const files: string[] = [];
