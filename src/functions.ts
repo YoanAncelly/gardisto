@@ -4,17 +4,19 @@ import * as ts from "typescript";
 
 interface CheckEnvVariablesOptions {
   debug?: boolean;
+  include?: string[];
+  exclude?: string[];
 }
 
 export const checkEnvVariables = (
   options: CheckEnvVariablesOptions | string = {},
   projectPath: string = process.cwd(),
 ): string[] => {
-  const { debug, path } = parseOptions(options, projectPath);
+  const { debug, path, include, exclude } = parseOptions(options, projectPath);
   const log = createLogger(debug);
 
   log(`Checking environment variables in project path: ${path}`);
-  const files = getAllJSAndTSFiles(path, log);
+  const files = getAllJSAndTSFiles(path, log, include, exclude);
   log(`Found ${files.length} JS/TS files to process`);
 
   const errors = processFiles(files, log);
@@ -26,11 +28,16 @@ export const checkEnvVariables = (
 const parseOptions = (
   options: CheckEnvVariablesOptions | string,
   defaultPath: string,
-): { debug: boolean; path: string } => {
+): { debug: boolean; path: string; include: string[]; exclude: string[] } => {
   if (typeof options === "string") {
-    return { debug: false, path: options };
+    return { debug: false, path: options, include: [], exclude: [] };
   }
-  return { debug: options.debug ?? false, path: defaultPath };
+  return {
+    debug: options.debug ?? false,
+    path: defaultPath,
+    include: options.include ?? [],
+    exclude: options.exclude ?? [],
+  };
 };
 
 const createLogger = (debug: boolean) => (...args: unknown[]): void => {
@@ -81,26 +88,33 @@ const handleErrors = (errors: string[]): void => {
   }
 };
 
+const matchPattern = (filePath: string, pattern: string): boolean =>
+  new RegExp(pattern.replace('*', '.*')).test(filePath);
+
+const shouldCheckFile = (filePath: string, include: string[], exclude: string[]): boolean =>
+  (include.length === 0 || include.some(pattern => matchPattern(filePath, pattern))) &&
+  !exclude.some(pattern => matchPattern(filePath, pattern));
+
 export const getAllJSAndTSFiles = (
   dir: string,
   log: (...args: unknown[]) => void,
+  include: string[],
+  exclude: string[],
 ): string[] => {
   log(`Scanning directory: ${dir}`);
-  const files: string[] = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-  for (const entry of entries) {
+  return entries.flatMap(entry => {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory() && entry.name !== "node_modules") {
       log(`Entering subdirectory: ${fullPath}`);
-      files.push(...getAllJSAndTSFiles(fullPath, log));
-    } else if (entry.isFile() && /\.(js|jsx|ts|tsx)$/.test(entry.name)) {
+      return getAllJSAndTSFiles(fullPath, log, include, exclude);
+    } else if (entry.isFile() && /\.(js|jsx|ts|tsx)$/.test(entry.name) && shouldCheckFile(fullPath, include, exclude)) {
       log(`Adding file: ${fullPath}`);
-      files.push(fullPath);
+      return [fullPath];
     }
-  }
-
-  return files;
+    return [];
+  });
 };
 
 export const checkEnvVariable = (
