@@ -1,23 +1,23 @@
 {
-  "name": "gardisto-example",
-  "version": "1.0.0",
-  "description": "Example project for testing env-sentinel",
-  "main": "dist/index.js",
-  "scripts": {
-    "start": "ts-node src/index.ts",
-    "test:complete": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret ts-node src/index.ts",
-    "test:partial": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node src/index.ts",
-    "test:missing": "ts-node src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "gardisto": "file:../"
-  },
-  "devDependencies": {
-    "@types/node": "^16.11.12",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.5"
-  }
+	"name": "gardisto-example",
+	"version": "1.0.0",
+	"description": "Example project for testing env-sentinel",
+	"main": "dist/index.js",
+	"scripts": {
+		"start": "ts-node src/index.ts",
+		"test:complete": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret ts-node src/index.ts",
+		"test:partial": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node src/index.ts",
+		"test:missing": "ts-node src/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"gardisto": "file:../"
+	},
+	"devDependencies": {
+		"@types/node": "^16.11.12",
+		"ts-node": "^10.4.0",
+		"typescript": "^4.5.5"
+	}
 }

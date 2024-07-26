@@ -1,14 +1,14 @@
-import { databaseUrl, apiKey, port, debugMode } from './config';
+import { apiKey, databaseUrl, debugMode, port } from "./config";
 
 function startApp() {
-  console.log('Starting application...');
-  console.log('Database URL:', databaseUrl);
-  console.log('API Key:', apiKey);
-  console.log('Port:', port);
+	console.log("Starting application...");
+	console.log("Database URL:", databaseUrl);
+	console.log("API Key:", apiKey);
+	console.log("Port:", port);
 
-  if (debugMode) {
-    console.log('Debug mode is enabled');
-  }
+	if (debugMode) {
+		console.log("Debug mode is enabled");
+	}
 }
 
 export { startApp };
