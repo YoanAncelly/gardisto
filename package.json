@@ -10,8 +10,9 @@
 		"url": "https://github.com/yoanancelly/gardisto"
 	},
 	"scripts": {
+		"preinstall": "npx only-allow pnpm",
 		"build": "tsup",
-		"prepublishOnly": "npm run build",
+		"prepublishOnly": "pnpm build",
 		"check": "biome check --write"
 	},
 	"keywords": ["environment", "variables", "check", "typescript"],
