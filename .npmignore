@@ -1,6 +1,6 @@
-node_modules
-src
-example
+node_modules/
+src/
+example/
 
 .env
 .DS_Store
@@ -9,3 +9,8 @@ tsconfig.json
 tsup.config.ts
 
 biome.json
+
+.gitignore
+.npmignore
+
+.github/
