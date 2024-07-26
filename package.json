@@ -1,6 +1,6 @@
 {
   "name": "env-sentinel",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Automatically check and verify that environment variables in a project are set",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
