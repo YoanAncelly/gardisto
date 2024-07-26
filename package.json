@@ -23,5 +23,11 @@
 		"@types/node": "^16.11.12",
 		"tsup": "^8.2.3",
 		"typescript": "^5.5.4"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/"
+	},
+	"engines": {
+		"node": ">=18"
 	}
 }
