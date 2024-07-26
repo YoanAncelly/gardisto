@@ -1,5 +1,5 @@
 {
-  "name": "env-sentinel-example",
+  "name": "gardisto-example",
   "version": "1.0.0",
   "description": "Example project for testing env-sentinel",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "env-sentinel": "file:../"
+    "gardisto": "file:../"
   },
   "devDependencies": {
     "@types/node": "^16.11.12",

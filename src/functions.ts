@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import * as ts from 'typescript';
 
-interface EnvSentinelOptions {
+interface CheckEnvVariablesOptions {
   debug?: boolean;
 }
 
-export default function envSentinel(options: EnvSentinelOptions | string = {}, projectPath: string = process.cwd()): void {
+export function checkEnvVariables(options: CheckEnvVariablesOptions | string = {}, projectPath: string = process.cwd()): void {
   let debug = false;
   if (typeof options === 'string') {
     projectPath = options;

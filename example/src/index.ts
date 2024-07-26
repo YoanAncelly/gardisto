@@ -1,10 +1,10 @@
-import { envSentinel } from 'env-sentinel';
+import { checkEnvVariables } from 'gardisto';
 import { startApp } from './app';
 
-console.log('Running env-sentinel check...');
+console.log('Running gardisto check...');
 
-// Run the env-sentinel check
-envSentinel({ debug: false });
+// Run the gardisto check
+checkEnvVariables({ debug: false });
 
 // Start the application
 startApp();

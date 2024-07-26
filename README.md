@@ -1,31 +1,31 @@
-# env-sentinel
+# gardisto
 
 Automatically check and verify environment variables in a TypeScript project.
 
 ## Installation
 
 ```bash
-npm install env-sentinel
+npm install gardisto
 ```
 
 ## Usage
 
-To use the `env-sentinel` package, simply require it in your project and call the `envSentinel` function, passing the root directory of your project as an argument.
+To use the `gardisto` package, simply require it in your project and call the `checkEnvVariables` function, passing the root directory of your project as an argument.
 
 ```typescript
-import { envSentinel } from 'env-sentinel';
+import { checkEnvVariables } from 'gardisto';
 
-envSentinel({ debug: false });
+checkEnvVariables({ debug: false }, './path/to/project/root');
 ```
 
-The `envSentinel` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will log an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||`), it will log a warning suggesting that the variable might not be set.
+The `checkEnvVariables` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will log an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||`), it will log a warning suggesting that the variable might not be set.
 
 ## Example
 
 ```bash
-const { envSentinel } = require('env-sentinel');
+const { checkEnvVariables } = require('gardisto');
 
-envSentinel('./path/to/project/root');
+checkEnvVariables({ debug: false }, './path/to/project/root');
 
 // Output:
 // Error: Environment variable DB_HOST is not set.
@@ -41,4 +41,4 @@ envSentinel('./path/to/project/root');
 
 ## License
 
-`env-sentinel` is licensed under the MIT License.
+`gardisto` is licensed under the MIT License.

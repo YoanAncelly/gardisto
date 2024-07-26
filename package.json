@@ -1,5 +1,5 @@
 {
-  "name": "env-sentinel",
+  "name": "gardisto",
   "version": "0.0.1",
   "description": "Automatically check and verify that environment variables in a project are set",
   "main": "dist/index.js",
@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yoanancelly/env-sentinel"
+    "url": "https://github.com/yoanancelly/gardisto"
   },
   "scripts": {
     "build": "tsup",
