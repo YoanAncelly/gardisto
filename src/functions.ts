@@ -84,31 +84,34 @@ export function getAllJSAndTSFiles(
 	return files;
 }
 
-export function checkEnvVariable(
-	variable: string,
-	node: ts.Node,
-	sourceFile: ts.SourceFile,
-	log: (...args: any[]) => void,
-	errors: string[],
-): void {
-	log(`Checking environment variable: ${variable}`);
-	const isEnvVarSet = variable in process.env && process.env[variable] !== "";
+export const checkEnvVariable = (
+  variable: string,
+  node: ts.Node,
+  sourceFile: ts.SourceFile,
+  log: (...args: any[]) => void,
+  errors: string[]
+): void => {
+  log(`Checking environment variable: ${variable}`);
+  const isEnvVarSet = variable in process.env && process.env[variable] !== "";
 
-	if (!isEnvVarSet) {
-		const errorMessage = `Error: Environment variable ${variable} is not set.\nFile: ${sourceFile.fileName}\nLine: ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}`;
-		errors.push(errorMessage);
-	} else {
-		log(`Environment variable ${variable} is set and not empty`);
-	}
+  const createMessage = (type: string, message: string) =>
+    `${type}: ${message}\nFile: ${sourceFile.fileName}\nLine: ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}`;
 
-	// Check for OR operator only if the environment variable is not set
-	if (
-		!isEnvVarSet &&
-		node.parent &&
-		ts.isBinaryExpression(node.parent) &&
-		node.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken
-	) {
-		const warningMessage = `Warning: Environment variable ${variable} has an OR operator. It might not be set.\nFile: ${sourceFile.fileName}\nLine: ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}`;
-		console.warn(warningMessage);
-	}
-}
+  const hasOrOperator = (node: ts.Node): boolean =>
+    node.parent &&
+    ts.isBinaryExpression(node.parent) &&
+    (node.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
+     node.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken);
+
+  if (!isEnvVarSet) {
+    if (hasOrOperator(node)) {
+      const warningMessage = createMessage("Warning", `Environment variable ${variable} has an OR operator. It might not be set.`);
+      console.warn(warningMessage);
+    } else {
+      const errorMessage = createMessage("Error", `Environment variable ${variable} is not set.`);
+      errors.push(errorMessage);
+    }
+  } else {
+    log(`Environment variable ${variable} is set and not empty`);
+  }
+};
