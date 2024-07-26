@@ -10,9 +10,7 @@
 		"url": "https://github.com/yoanancelly/gardisto"
 	},
 	"scripts": {
-		"preinstall": "npx only-allow pnpm",
 		"build": "tsup",
-		"prepublishOnly": "pnpm build",
 		"check": "biome check",
 		"check:write": "biome check --write"
 	},
