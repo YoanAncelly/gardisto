@@ -3,7 +3,7 @@ import path from "path";
 import * as ts from "typescript";
 
 interface CheckEnvVariablesOptions {
-	debug?: boolean;
+  debug?: boolean;
 }
 
 export const checkEnvVariables = (
@@ -67,7 +67,7 @@ const processFiles = (
     const envVars = findEnvVariables(sourceFile);
     log(`Found ${envVars.length} environment variables in ${file}`);
     envVars.forEach(variable =>
-      checkEnvVariable(variable, sourceFile.getChildAt(0), sourceFile, log, errors)
+      { checkEnvVariable(variable, sourceFile.getChildAt(0), sourceFile, log, errors) }
     );
   }
   return errors;
@@ -81,33 +81,33 @@ const handleErrors = (errors: string[]): void => {
   }
 };
 
-export function getAllJSAndTSFiles(
-	dir: string,
-	log: (...args: unknown[]) => void,
-): string[] {
-	log(`Scanning directory: ${dir}`);
-	const files: string[] = [];
-	const entries = fs.readdirSync(dir, { withFileTypes: true });
+export const getAllJSAndTSFiles = (
+  dir: string,
+  log: (...args: unknown[]) => void,
+): string[] => {
+  log(`Scanning directory: ${dir}`);
+  const files: string[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-	for (const entry of entries) {
-		const fullPath = path.join(dir, entry.name);
-		if (entry.isDirectory() && entry.name !== "node_modules") {
-			log(`Entering subdirectory: ${fullPath}`);
-			files.push(...getAllJSAndTSFiles(fullPath, log));
-		} else if (entry.isFile() && /\.(js|jsx|ts|tsx)$/.test(entry.name)) {
-			log(`Adding file: ${fullPath}`);
-			files.push(fullPath);
-		}
-	}
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== "node_modules") {
+      log(`Entering subdirectory: ${fullPath}`);
+      files.push(...getAllJSAndTSFiles(fullPath, log));
+    } else if (entry.isFile() && /\.(js|jsx|ts|tsx)$/.test(entry.name)) {
+      log(`Adding file: ${fullPath}`);
+      files.push(fullPath);
+    }
+  }
 
-	return files;
-}
+  return files;
+};
 
 export const checkEnvVariable = (
   variable: string,
   node: ts.Node,
   sourceFile: ts.SourceFile,
-  log: (...args: any[]) => void,
+  log: (...args: unknown[]) => void,
   errors: string[]
 ): void => {
   log(`Checking environment variable: ${variable}`);
