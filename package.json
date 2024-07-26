@@ -13,14 +13,23 @@
 		"build": "tsup",
 		"check": "biome check",
 		"check:write": "biome check --write",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "npm run build",
+		"test:complete": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret TOKEN=mytoken ts-node example/src/index.ts",
+		"test:partial": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node example/src/index.ts",
+		"test:missing": "ts-node example/src/index.ts"
 	},
-	"keywords": ["environment", "variables", "check", "typescript"],
+	"keywords": [
+		"environment",
+		"variables",
+		"check",
+		"typescript"
+	],
 	"author": "Yoan Ancelly",
 	"license": "MIT",
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/node": "^16.11.12",
+		"ts-node": "^10.9.2",
 		"tsup": "^8.2.3",
 		"typescript": "^5.5.4"
 	}
