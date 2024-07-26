@@ -7,3 +7,5 @@ example
 
 tsconfig.json
 tsup.config.ts
+
+biome.json
