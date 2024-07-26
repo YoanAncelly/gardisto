@@ -1,5 +1,7 @@
 # gardisto
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/40be2a9c64e84e959c7f4fb69bed41cb)](https://app.codacy.com/gh/YoanAncelly/gardisto?utm_source=github.com&utm_medium=referral&utm_content=YoanAncelly/gardisto&utm_campaign=Badge_Grade)
+
 Automatically check and verify environment variables in a TypeScript project.
 
 ## Installation
