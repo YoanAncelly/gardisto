@@ -3,6 +3,9 @@
 	"organizeImports": {
 		"enabled": true
 	},
+	"files": {
+		"include": ["src/**/*.{ts,tsx}"]
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
