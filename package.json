@@ -1,29 +1,26 @@
 {
-  "name": "gardisto",
-  "version": "0.0.1",
-  "description": "Automatically check and verify that environment variables in a project are set",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yoanancelly/gardisto"
-  },
-  "scripts": {
-    "build": "tsup",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [
-    "environment",
-    "variables",
-    "check",
-    "typescript"
-  ],
-  "author": "Yoan Ancelly",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^16.11.12",
-    "tsup": "^8.2.3",
-    "typescript": "^5.5.4"
-  }
+	"name": "gardisto",
+	"version": "0.0.1",
+	"description": "Automatically check and verify that environment variables in a project are set",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/yoanancelly/gardisto"
+	},
+	"scripts": {
+		"build": "tsup",
+		"prepublishOnly": "npm run build",
+		"check": "biome check --write"
+	},
+	"keywords": ["environment", "variables", "check", "typescript"],
+	"author": "Yoan Ancelly",
+	"license": "MIT",
+	"devDependencies": {
+		"@biomejs/biome": "1.8.3",
+		"@types/node": "^16.11.12",
+		"tsup": "^8.2.3",
+		"typescript": "^5.5.4"
+	}
 }
