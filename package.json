@@ -12,7 +12,8 @@
 	"scripts": {
 		"build": "tsup",
 		"check": "biome check",
-		"check:write": "biome check --write"
+		"check:write": "biome check --write",
+		"prepublishOnly": "npm run build"
 	},
 	"keywords": ["environment", "variables", "check", "typescript"],
 	"author": "Yoan Ancelly",
