@@ -18,14 +18,14 @@ import { checkEnvVariables } from 'gardisto';
 checkEnvVariables({ debug: false }, './path/to/project/root');
 ```
 
-The `checkEnvVariables` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will log an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||` or `??`), it will log a warning suggesting that the variable might not be set.
+The `gardisto` function will recursively traverse all TypeScript files in the specified directory and its subdirectories, checking for any references to `process.env` variables. If a variable is not set, it will log an error with the file name and line number where the variable is referenced. If a variable is set but empty, it will log a warning with the file name and line number. Additionally, if a variable is used with an OR operator (`||` or `??`), it will log a warning suggesting that the variable might not be set.
 
 You can also specify include and exclude patterns to filter the files that are checked for environment variables. For example:
 
 ```typescript
-import { checkEnvVariables } from 'gardisto';
+import { gardisto } from 'gardisto';
 
-checkEnvVariables({
+gardisto({
   debug: false,
   include: ['src/**/*.ts', 'src/**/*.tsx'],
   exclude: ['**/*.test.ts', '**/*.spec.tsx'],
@@ -37,9 +37,9 @@ This will only check files with the `.ts` or `.tsx` extension in the `src` direc
 ## Example
 
 ```bash
-const { checkEnvVariables } = require('gardisto');
+import { gardisto } from "gardisto";
 
-checkEnvVariables({ debug: false }, './path/to/project/root');
+gardisto({ debug: false }, './path/to/project/root');
 
 // Output:
 // Error: Environment variable DB_HOST is not set.
