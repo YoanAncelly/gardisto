@@ -26,9 +26,9 @@ You can also specify include and exclude patterns to filter the files that are c
 import { gardisto } from 'gardisto';
 
 gardisto({
-  debug: false,
-  include: ['src/**/*.ts', 'src/**/*.tsx'],
-  exclude: ['**/*.test.ts', '**/*.spec.tsx'],
+  debug: process.env.DEBUG === "true",
+  include: ["src"]
+  exclude: ["dist", "node_modules"],
 }, './path/to/project/root');
 ```
 
@@ -39,7 +39,10 @@ This will only check files with the `.ts` or `.tsx` extension in the `src` direc
 ```bash
 import { gardisto } from "gardisto";
 
-gardisto({ debug: false }, './path/to/project/root');
+gardisto({
+		debug: process.env.DEBUG === "true",
+		exclude: ["dist", "node_modules"],
+	});
 
 // Output:
 // Error: Environment variable DB_HOST is not set.
