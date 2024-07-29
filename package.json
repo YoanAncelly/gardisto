@@ -14,9 +14,9 @@
 		"check": "biome check",
 		"check:write": "biome check --write",
 		"prepublishOnly": "npm run build",
-		"test:complete": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret TOKEN=mytoken ts-node example/src/index.ts",
-		"test:partial": "DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node example/src/index.ts",
-		"test:missing": "ts-node example/src/index.ts"
+		"test:complete": "cd example && DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret TOKEN=mytoken ts-node src/index.ts",
+		"test:partial": "cd example && DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node src/index.ts",
+		"test:missing": "cd example && ts-node src/index.ts"
 	},
 	"keywords": [
 		"environment",
