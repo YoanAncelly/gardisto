@@ -40,9 +40,9 @@ This will only check files with the `.ts` or `.tsx` extension in the `src` direc
 import { gardisto } from "gardisto";
 
 gardisto({
-		debug: process.env.DEBUG === "true",
-		exclude: ["dist", "node_modules"],
-	});
+  debug: process.env.DEBUG === "true",
+  exclude: ["dist", "node_modules"],
+});
 
 // Output:
 // Error: Environment variable DB_HOST is not set.
