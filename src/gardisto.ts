@@ -2,6 +2,7 @@ import { GardistoOptions, Logger } from "./types";
 import { createLogger } from "./logger";
 import { getAllJSAndTSFiles } from "./fileUtils";
 import { processFiles } from "./envVariableChecker";
+import path from 'path';
 
 export class Gardisto {
   private log: Logger;
@@ -20,15 +21,16 @@ export class Gardisto {
       console.error("Errors found in environment variables:");
       errors.forEach((error) => console.error(error));
       process.exit(1);
-    } else {
-      this.log("No environment variable issues found.");
+    } else if (warnings.length === 0) {
+      console.log("No environment variable issues found.");
     }
   }
 
   public run(projectPath: string = process.cwd()): void {
-    this.log(`Checking environment variables in project path: ${projectPath}`);
-    const files = getAllJSAndTSFiles(projectPath, this.log, this.options.include ?? [], this.options.exclude ?? []);
-    this.log(`Found ${files.length} JS/TS files to process`);
+    const absoluteProjectPath = path.resolve(projectPath);
+    this.log(`Checking environment variables in project path: ${absoluteProjectPath}`);
+    const files = getAllJSAndTSFiles(absoluteProjectPath, this.log, this.options.include ?? [], this.options.exclude ?? []);
+    this.log(`Processing ${files.length} JS/TS files`);
 
     const { errors, warnings, errorCount } = processFiles(files, this.log);
 

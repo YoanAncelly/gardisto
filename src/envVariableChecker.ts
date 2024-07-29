@@ -12,13 +12,9 @@ const findEnvVariables = (sourceFile: ts.SourceFile, log: Logger, errors: string
       const envVar = node.name.getText();
       if (!processedVars.has(envVar)) {
         processedVars.add(envVar);
-        log(`Found environment variable: ${envVar}`);
-        const initialErrorCount = errors.length;
-        const initialWarningCount = warnings.length;
+        log(`Checking environment variable: ${envVar}`);
         checkEnvVariable(envVar, node, sourceFile, log, errors, warnings);
-        if (errors.length > initialErrorCount) {
-          errorCount++;
-        }
+        errorCount += errors.length > 0 ? 1 : 0;
       }
     }
     ts.forEachChild(node, visitor);
@@ -35,7 +31,6 @@ const checkEnvVariable = (
   errors: string[],
   warnings: string[]
 ): void => {
-  log(`Checking environment variable: ${variable}`);
   const isEnvVarSet = process.env[variable] !== undefined && process.env[variable] !== "";
 
   const createMessage = (type: string, message: string) =>
@@ -47,26 +42,20 @@ const checkEnvVariable = (
       if (ts.isBinaryExpression(current.parent) &&
           (current.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
            current.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)) {
-        log(`${variable} has OR operator (|| or ??)`);
         return true;
       }
       if (ts.isConditionalExpression(current.parent)) {
-        log(`${variable} has conditional expression (?:)`);
         return true;
       }
       if (ts.isVariableDeclaration(current.parent) && current.parent.initializer) {
-        // Check if the initializer is just process.env access
         if (ts.isPropertyAccessExpression(current.parent.initializer) &&
             current.parent.initializer.expression.getText() === 'process.env') {
-          log(`${variable} does not have a default value`);
           return false;
         }
-        log(`${variable} has default value assignment`);
         return true;
       }
       current = current.parent;
     }
-    log(`${variable} does not have a default value`);
     return false;
   };
 
@@ -78,8 +67,6 @@ const checkEnvVariable = (
       const errorMessage = createMessage("Error", `Environment variable ${variable} is not set.`);
       errors.push(errorMessage);
     }
-  } else {
-    log(`Environment variable ${variable} is set and not empty`);
   }
 };
 
@@ -92,16 +79,9 @@ export const processFiles = (
   let totalErrorCount = 0;
 
   for (const file of files) {
-    log(`Processing file: ${file}`);
-    const sourceFile = ts.createSourceFile(
-      file,
-      fs.readFileSync(file, 'utf8'),
-      ts.ScriptTarget.Latest,
-      true
-    );
+    const sourceFile = createSourceFile(file);
     const fileErrorCount = findEnvVariables(sourceFile, log, errors, warnings);
     totalErrorCount += fileErrorCount;
-    log(`Found ${fileErrorCount} environment variable errors in ${file}`);
   }
 
   return { errors, warnings, errorCount: totalErrorCount };

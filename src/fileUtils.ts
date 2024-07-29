@@ -1,35 +1,59 @@
 import fs from "fs";
 import path from "path";
-import * as ts from "typescript";
 import { Logger } from './types';
+import ts from "typescript";
 
-const matchPattern = (filePath: string, pattern: string): boolean =>
-  new RegExp(pattern.replace('*', '.*')).test(filePath);
-
-const shouldCheckFile = (filePath: string, include: string[], exclude: string[]): boolean =>
-  (include.length === 0 || include.some(pattern => matchPattern(filePath, pattern))) &&
-  !exclude.some(pattern => matchPattern(filePath, pattern));
+const isMatch = (filePath: string, pattern: string): boolean => {
+  const regexPattern = pattern
+    .split('*')
+    .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*');
+  return new RegExp(`^${regexPattern}$`).test(filePath);
+};
 
 export const getAllJSAndTSFiles = (
   dir: string,
   log: Logger,
-  include: string[],
-  exclude: string[],
+  include: string[] = [],
+  exclude: string[] = []
 ): string[] => {
-  log(`Scanning directory: ${dir}`);
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  log(`Checking environment variables in project path: ${dir}`);
+  const files: string[] = [];
 
-  return entries.flatMap(entry => {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory() && entry.name !== "node_modules") {
-      log(`Entering subdirectory: ${fullPath}`);
-      return getAllJSAndTSFiles(fullPath, log, include, exclude);
-    } else if (entry.isFile() && /\.(js|jsx|ts|tsx)$/.test(entry.name) && shouldCheckFile(fullPath, include, exclude)) {
-      log(`Adding file: ${fullPath}`);
-      return [fullPath];
+  const isExcluded = (filePath: string): boolean => {
+    return exclude.some(pattern => isMatch(filePath, pattern));
+  };
+
+  const isIncluded = (filePath: string): boolean => {
+    return include.length === 0 || include.some(pattern => isMatch(filePath, pattern));
+  };
+
+  const scanDirectory = (currentDir: string, isTopLevel: boolean = true) => {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      const relativePath = path.relative(process.cwd(), fullPath);
+
+      if (isExcluded(relativePath)) {
+        if (isTopLevel) {
+          log(`Skipping excluded path: ${relativePath}`);
+        }
+        continue;
+      }
+
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath, false);
+      } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.ts'))) {
+        if (isIncluded(relativePath)) {
+          files.push(fullPath);
+        }
+      }
     }
-    return [];
-  });
+  };
+
+  scanDirectory(dir);
+  return files;
 };
 
 export const createSourceFile = (filePath: string): ts.SourceFile =>
