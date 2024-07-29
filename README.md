@@ -27,7 +27,7 @@ import { gardisto } from 'gardisto';
 
 gardisto({
   debug: process.env.DEBUG === "true",
-  include: ["src"]
+  include: ["src"],
   exclude: ["dist", "node_modules"],
 }, './path/to/project/root');
 ```
