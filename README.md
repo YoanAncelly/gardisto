@@ -1,6 +1,6 @@
 # gardisto
 
-Automatically check and verify environment variables in a TypeScript project.
+Automatically check and verify environment variables in your project.
 
 ## Installation
 
