@@ -32,7 +32,7 @@ const checkEnvVariable = (
   warnings: string[],
   showDefaultValues: boolean
 ): void => {
-  const isEnvVarSet = process.env[variable] !== undefined && process.env[variable] !== "";
+  const isEnvVarSet = process.env[variable] !== undefined && process.env[variable].trim() !== "";
 
   const createMessage = (type: string, message: string) =>
     `${type}: ${message}\nFile: ${sourceFile.fileName}\nLine: ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}`;
