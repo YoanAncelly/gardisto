@@ -4,40 +4,33 @@ import { getAllJSAndTSFiles } from "./fileUtils";
 import { processFiles } from "./envVariableChecker";
 import path from 'path';
 
-export class Gardisto {
-  private log: Logger;
-  private showDefaultValues: boolean;
-
-  constructor(private options: GardistoOptions = {}) {
-    this.log = createLogger(options.debug ?? false);
-    this.showDefaultValues = options.showDefaultValues ?? false;
+const handleResults = (errors: string[], warnings: string[], errorCount: number): void => {
+  if (warnings.length > 0) {
+    console.warn("Warnings for environment variables:");
+    warnings.forEach((warning) => console.warn(warning));
+    console.warn(); // Add blank line for readability
   }
 
-  private handleResults(errors: string[], warnings: string[], errorCount: number): void {
-    if (warnings.length > 0) {
-      console.warn("Warnings for environment variables:");
-      warnings.forEach((warning) => console.warn(warning));
-      console.warn(); // Add a blank line for readability
-    }
-
-    if (errorCount > 0) {
-      console.error("Errors found in environment variables:");
-      errors.forEach((error) => console.error(error));
-      console.error(); // Add a blank line for readability
-      process.exit(1);
-    } else if (warnings.length === 0) {
-      console.log("No environment variable issues found.");
-    }
+  if (errorCount > 0) {
+    console.error("Errors found in environment variables:");
+    errors.forEach((error) => console.error(error));
+    console.error(); // Add blank line for readability
+    process.exit(1);
+  } else if (warnings.length === 0) {
+    console.log("No environment variable issues found.");
   }
+};
 
-  public run(projectPath: string = process.cwd()): void {
-    const absoluteProjectPath = path.resolve(projectPath);
-    this.log(`Checking environment variables in project path: ${absoluteProjectPath}`);
-    const files = getAllJSAndTSFiles(absoluteProjectPath, this.log, this.options.include ?? [], this.options.exclude ?? []);
-    this.log(`Processing ${files.length} JS/TS files`);
+export const gardisto = (options: GardistoOptions = {}): void => {
+  const log = createLogger(options.debug ?? false);
+  const projectPath = options.projectPath ?? process.cwd();
+  const absoluteProjectPath = path.resolve(projectPath);
 
-    const { errors, warnings, errorCount } = processFiles(files, this.log, this.showDefaultValues);
+  log(`Checking environment variables in project path: ${absoluteProjectPath}`);
+  const files = getAllJSAndTSFiles(absoluteProjectPath, log, options.include ?? [], options.exclude ?? []);
+  log(`Processing ${files.length} JS/TS files`);
 
-    this.handleResults(errors, warnings, errorCount);
-  }
-}
+  const { errors, warnings, errorCount } = processFiles(files, log, options.showDefaultValues ?? false);
+
+  handleResults(errors, warnings, errorCount);
+};
