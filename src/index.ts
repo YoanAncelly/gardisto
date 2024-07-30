@@ -1,10 +1,8 @@
 import { GardistoOptions } from './types';
-import { Gardisto } from './gardisto';
+import { gardisto as runGardisto } from './gardisto';
 
 export const gardisto = (options: GardistoOptions = {}): void => {
-  const checker = new Gardisto(options);
-  checker.run();
+  runGardisto(options);
 };
 
-export { Gardisto };
 export * from './types';
