@@ -18,8 +18,10 @@ const findEnvVariables = (sourceFile: ts.SourceFile, log: Logger, errors: string
       if (!processedVars.has(envVar)) {
         processedVars.add(envVar);
         log(`Checking environment variable: ${envVar}`);
-        checkEnvVariable(envVar, node, sourceFile, log, errors, warnings, showDefaultValues);
-        errorCount += errors.length > 0 ? 1 : 0;
+        const isError = checkEnvVariable(envVar, node, sourceFile, log, errors, warnings, showDefaultValues);
+        if (isError) {
+          errorCount++;
+        }
       }
     }
     // Continue traversing the AST
@@ -40,7 +42,7 @@ const checkEnvVariable = (
   errors: string[],
   warnings: string[],
   showDefaultValues: boolean
-): void => {
+): boolean => {
   // Check if the env variable is set and not empty
   const isEnvVarSet = process.env[variable] !== undefined && process.env[variable].trim() !== "";
 
@@ -117,11 +119,14 @@ const checkEnvVariable = (
         }
       }
       warnings.push(warningMessage);
+      return false;
     } else {
       const errorMessage = createMessage("Error", `Environment variable ${variable} is not set.`);
       errors.push(errorMessage);
+      return true;
     }
   }
+  return false;
 };
 
 // Main function to process multiple files
