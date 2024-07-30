@@ -16,7 +16,8 @@
 		"prepublishOnly": "npm run build",
 		"test:complete": "cd example && DATABASE_URL=mongodb://localhost:27017/mydb API_KEY=secret PORT=8080 DEBUG_MODE=true SECRET_KEY=mysecret TOKEN=mytoken ts-node src/index.ts",
 		"test:partial": "cd example && DATABASE_URL=mongodb://localhost:27017/mydb API_KEY= ts-node src/index.ts",
-		"test:missing": "cd example && ts-node src/index.ts"
+		"test:missing": "cd example && ts-node src/index.ts",
+		"test": "jest"
 	},
 	"keywords": [
 		"environment",
@@ -28,7 +29,10 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
+		"@types/jest": "^29.5.12",
 		"@types/node": "^16.11.12",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.2.3",
 		"ts-node": "^10.9.2",
 		"tsup": "^8.2.3",
 		"typescript": "^5.5.4"
