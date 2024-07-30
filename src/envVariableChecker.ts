@@ -3,7 +3,7 @@ import { Logger } from './types';
 import { createSourceFile } from "./fileUtils";
 import fs from "fs";
 
-const findEnvVariables = (sourceFile: ts.SourceFile, log: Logger, errors: string[], warnings: string[]): number => {
+const findEnvVariables = (sourceFile: ts.SourceFile, log: Logger, errors: string[], warnings: string[], showDefaultValues: boolean): number => {
   let errorCount = 0;
   const processedVars = new Set<string>();
   const visitor = (node: ts.Node): void => {
@@ -13,7 +13,7 @@ const findEnvVariables = (sourceFile: ts.SourceFile, log: Logger, errors: string
       if (!processedVars.has(envVar)) {
         processedVars.add(envVar);
         log(`Checking environment variable: ${envVar}`);
-        checkEnvVariable(envVar, node, sourceFile, log, errors, warnings);
+        checkEnvVariable(envVar, node, sourceFile, log, errors, warnings, showDefaultValues);
         errorCount += errors.length > 0 ? 1 : 0;
       }
     }
@@ -29,12 +29,39 @@ const checkEnvVariable = (
   sourceFile: ts.SourceFile,
   log: Logger,
   errors: string[],
-  warnings: string[]
+  warnings: string[],
+  showDefaultValues: boolean
 ): void => {
   const isEnvVarSet = process.env[variable] !== undefined && process.env[variable] !== "";
 
   const createMessage = (type: string, message: string) =>
     `${type}: ${message}\nFile: ${sourceFile.fileName}\nLine: ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}`;
+
+  const extractDefaultValue = (node: ts.Node): string | undefined => {
+    let current = node;
+    while (current.parent) {
+      if (ts.isBinaryExpression(current.parent) &&
+          (current.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
+           current.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)) {
+        return current.parent.right.getText();
+      }
+      if (ts.isConditionalExpression(current.parent)) {
+        return current.parent.whenFalse.getText();
+      }
+      if (ts.isVariableDeclaration(current.parent) && current.parent.initializer) {
+        if (!ts.isPropertyAccessExpression(current.parent.initializer) ||
+            current.parent.initializer.expression.getText() !== 'process.env') {
+          return current.parent.initializer.getText();
+        }
+      }
+      if (ts.isBinaryExpression(current.parent) &&
+          current.parent.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+        return `${current.parent.left.getText()} === ${current.parent.right.getText()}`;
+      }
+      current = current.parent;
+    }
+    return undefined;
+  };
 
   const hasDefaultValue = (node: ts.Node): boolean => {
     let current = node;
@@ -61,7 +88,13 @@ const checkEnvVariable = (
 
   if (!isEnvVarSet) {
     if (hasDefaultValue(node)) {
-      const warningMessage = createMessage("Warning", `Environment variable ${variable} is not set, but has a default value.`);
+      let warningMessage = createMessage("Warning", `Environment variable ${variable} is not set, but has a default value.`);
+      if (showDefaultValues) {
+        const defaultValue = extractDefaultValue(node);
+        if (defaultValue) {
+          warningMessage += `\nDefault value: ${defaultValue}`;
+        }
+      }
       warnings.push(warningMessage);
     } else {
       const errorMessage = createMessage("Error", `Environment variable ${variable} is not set.`);
@@ -73,6 +106,7 @@ const checkEnvVariable = (
 export const processFiles = (
   files: string[],
   log: Logger,
+  showDefaultValues: boolean
 ): { errors: string[], warnings: string[], errorCount: number } => {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -80,7 +114,7 @@ export const processFiles = (
 
   for (const file of files) {
     const sourceFile = createSourceFile(file);
-    const fileErrorCount = findEnvVariables(sourceFile, log, errors, warnings);
+    const fileErrorCount = findEnvVariables(sourceFile, log, errors, warnings, showDefaultValues);
     totalErrorCount += fileErrorCount;
   }
 

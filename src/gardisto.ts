@@ -6,9 +6,11 @@ import path from 'path';
 
 export class Gardisto {
   private log: Logger;
+  private showDefaultValues: boolean;
 
   constructor(private options: GardistoOptions = {}) {
     this.log = createLogger(options.debug ?? false);
+    this.showDefaultValues = options.showDefaultValues ?? false;
   }
 
   private handleResults(errors: string[], warnings: string[], errorCount: number): void {
@@ -32,7 +34,7 @@ export class Gardisto {
     const files = getAllJSAndTSFiles(absoluteProjectPath, this.log, this.options.include ?? [], this.options.exclude ?? []);
     this.log(`Processing ${files.length} JS/TS files`);
 
-    const { errors, warnings, errorCount } = processFiles(files, this.log);
+    const { errors, warnings, errorCount } = processFiles(files, this.log, this.showDefaultValues);
 
     this.handleResults(errors, warnings, errorCount);
   }
