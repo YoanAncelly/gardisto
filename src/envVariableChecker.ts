@@ -39,7 +39,7 @@ const checkEnvVariable = (
 
   const extractDefaultValue = (node: ts.Node): string | undefined => {
     let current = node;
-    while (current.parent) {
+    while (current && current.parent) {
       if (ts.isBinaryExpression(current.parent) &&
           (current.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
            current.parent.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)) {
