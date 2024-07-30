@@ -17,11 +17,13 @@ export class Gardisto {
     if (warnings.length > 0) {
       console.warn("Warnings for environment variables:");
       warnings.forEach((warning) => console.warn(warning));
+      console.warn(); // Add a blank line for readability
     }
 
     if (errorCount > 0) {
       console.error("Errors found in environment variables:");
       errors.forEach((error) => console.error(error));
+      console.error(); // Add a blank line for readability
       process.exit(1);
     } else if (warnings.length === 0) {
       console.log("No environment variable issues found.");
