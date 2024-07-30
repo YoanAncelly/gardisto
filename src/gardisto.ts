@@ -5,7 +5,7 @@ import { processFiles } from "./envVariableChecker";
 import path from 'path';
 
 // Function to handle and display the results of the environment variable check
-const handleResults = (errors: string[], warnings: string[], errorCount: number): void => {
+export const handleResults = (errors: string[], warnings: string[], errorCount: number): void => {
   // Display warnings if any
   if (warnings.length > 0) {
     console.warn("Warnings for environment variables:");
