@@ -7,7 +7,8 @@ console.log("Running gardisto check...");
 gardisto({
   debug: true,
   include: ["**/*.ts"],
-  exclude: ["node_modules/**", "dist/**", "tests/**"]
+  exclude: ["node_modules/**", "dist/**", "tests/**"],
+  showDefaultValues: true
 });
 
 // If gardisto doesn't exit the process, it means no errors were found

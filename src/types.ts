@@ -2,6 +2,7 @@ export interface GardistoOptions {
   debug?: boolean;
   include?: string[];
   exclude?: string[];
+  showDefaultValues?: boolean;
   projectPath?: string;
 }
 
