@@ -50,11 +50,15 @@ export interface ProcessingResult {
 
 /** Base error class for Gardisto-specific errors */
 export class GardistoError extends Error {
-  constructor(message: string) {
+  constructor(message: string, debug: boolean = false) {
     super(message);
     this.name = 'GardistoError';
     // Restore prototype chain
     Object.setPrototypeOf(this, new.target.prototype);
+    // Only capture stack trace in debug mode
+    if (!debug) {
+      delete this.stack;
+    }
   }
 }
 
@@ -65,9 +69,10 @@ export class EnvError extends GardistoError {
     public readonly variable: string,
     /** Location where the error occurred */
     public readonly location: CodeLocation,
-    message: string
+    message: string,
+    debug: boolean = false
   ) {
-    super(message);
+    super(message, debug);
     this.name = 'EnvError';
     // Restore prototype chain
     Object.setPrototypeOf(this, new.target.prototype);
@@ -81,9 +86,10 @@ export class EnvWarning extends GardistoError {
     public readonly variable: string,
     /** Location where the warning occurred */
     public readonly location: CodeLocation,
-    message: string
+    message: string,
+    debug: boolean = false
   ) {
-    super(message);
+    super(message, debug);
     this.name = 'EnvWarning';
     // Restore prototype chain
     Object.setPrototypeOf(this, new.target.prototype);

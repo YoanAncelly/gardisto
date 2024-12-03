@@ -50,9 +50,9 @@ export const createLogger = (options: LoggerOptions | boolean): Logger => {
     if (value instanceof Error) {
       const errorMessage = (value as Error).message || 'Unknown error';
       const errorName = (value as Error).name || 'Error';
-      const errorStack = (value as Error).stack;
+      const errorStack = debug ? (value as Error).stack : undefined;
 
-      return isGardistoError(value)
+      return isGardistoError(value) || !debug
         ? `${errorName}: ${errorMessage}`
         : `${errorName}: ${errorMessage}${errorStack ? `\n${errorStack}` : ''}`;
     }

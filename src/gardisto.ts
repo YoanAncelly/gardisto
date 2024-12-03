@@ -5,18 +5,24 @@ import { processFiles } from "./envVariableChecker";
 import path from 'path';
 
 // Function to handle and display the results of the environment variable check
-export const handleResults = (errors: string[], warnings: string[], errorCount: number): void => {
+export const handleResults = (errors: any[], warnings: any[], errorCount: number): void => {
   // Display warnings if any
   if (warnings.length > 0) {
     console.warn("Warnings for environment variables:");
-    warnings.forEach((warning) => console.warn(warning));
+    warnings.forEach((warning) => {
+      const message = warning.toString().split('\n')[0]; // Only take the first line (the message)
+      console.warn(message);
+    });
     console.warn(); // Add blank line for readability
   }
 
   // Display errors if any, and exit the process with an error code
   if (errorCount > 0) {
     console.error("Errors found in environment variables:");
-    errors.forEach((error) => console.error(error));
+    errors.forEach((error) => {
+      const message = error.toString().split('\n')[0]; // Only take the first line (the message)
+      console.error(message);
+    });
     console.error(); // Add blank line for readability
     process.exit(1); // Exit with error code
   } else if (warnings.length === 0) {

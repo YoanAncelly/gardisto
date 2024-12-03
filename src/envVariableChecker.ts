@@ -73,14 +73,16 @@ const getEnvVarName = (node: ts.PropertyAccessExpression | ts.ElementAccessExpre
 const checkSecurityIssues = (
   variable: string,
   location: CodeLocation,
-  result: ProcessingResult
+  result: ProcessingResult,
+  debug: boolean
 ): void => {
   // Check for sensitive variables
   if (ENV_VAR_PATTERNS.sensitive.test(variable)) {
     result.warnings.push(new EnvWarning(
       variable,
       location,
-      `Environment variable ${variable} appears to contain sensitive information. Ensure it's properly secured.`
+      `Environment variable ${variable} appears to contain sensitive information. Ensure it's properly secured.`,
+      debug
     ));
   }
 
@@ -91,7 +93,8 @@ const checkSecurityIssues = (
       result.warnings.push(new EnvWarning(
         variable,
         location,
-        `URL environment variable ${variable} should include a valid protocol (${VALID_URL_PROTOCOLS.join(', ')}).`
+        `URL environment variable ${variable} should include a valid protocol (${VALID_URL_PROTOCOLS.join(', ')}).`,
+        debug
       ));
     }
   }
@@ -103,7 +106,8 @@ const checkSecurityIssues = (
       result.warnings.push(new EnvWarning(
         variable,
         location,
-        `Port environment variable ${variable} should be a number.`
+        `Port environment variable ${variable} should be a number.`,
+        debug
       ));
     }
   }
@@ -136,7 +140,8 @@ const findEnvVariables = (
               result.errors.push(new EnvError(
                 checkResult.variable,
                 checkResult.location,
-                `Missing required environment variable: ${envVar}`
+                `Missing required environment variable: ${envVar}`,
+                showDefaultValues
               ));
             }
             
@@ -145,12 +150,13 @@ const findEnvVariables = (
               result.warnings.push(new EnvWarning(
                 checkResult.variable,
                 checkResult.location,
-                `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`
+                `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`,
+                showDefaultValues
               ));
             }
 
             // Perform security checks
-            checkSecurityIssues(envVar, checkResult.location, result);
+            checkSecurityIssues(envVar, checkResult.location, result, showDefaultValues);
           }
         } catch (error) {
           log('error', `Error processing environment variable: ${error instanceof Error ? error.message : String(error)}`);
@@ -162,7 +168,8 @@ const findEnvVariables = (
         result.errors.push(new EnvError(
           'unknown',
           getNodeLocation(node, sourceFile),
-          `Error processing AST node: ${error.message}`
+          `Error processing AST node: ${error.message}`,
+          showDefaultValues
         ));
       }
     }
@@ -248,11 +255,13 @@ export const processFiles = (
       } catch (error) {
         log('error', `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`);
         if (error instanceof Error) {
-          result.errors.push(new EnvError(
+          const fileError = new EnvError(
             'unknown',
             { filePath: file, line: 0, column: 0 },
-            `Failed to process file: ${error.message}`
-          ));
+            `Failed to process file: ${error.message}`,
+            showDefaultValues
+          );
+          result.errors.push(fileError);
           result.errorCount++;
         }
       }
