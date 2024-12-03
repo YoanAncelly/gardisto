@@ -6,12 +6,110 @@ import {
   ProcessingResult,
   EnvError,
   EnvWarning,
+  isGardistoError,
   LogLevel 
 } from './types';
 import { createSourceFile } from "./fileUtils";
 import fs from "fs";
 
-// Function to find and check environment variables in a TypeScript source file
+/** Cache for parsed source files to improve performance */
+const sourceFileCache = new Map<string, ts.SourceFile>();
+
+/** Patterns that might indicate environment variable access */
+const ENV_ACCESS_PATTERNS = [
+  'process.env',
+  'process["env"]',
+  "process['env']"
+];
+
+/** Common environment variable naming patterns */
+const ENV_VAR_PATTERNS = {
+  sensitive: /(key|secret|password|token)/i,
+  url: /(url|uri|endpoint)/i,
+  port: /^port$/i
+};
+
+/** URL protocols that are considered valid */
+const VALID_URL_PROTOCOLS = [
+  'http://',
+  'https://',
+  'mongodb://',
+  'mongodb+srv://',
+  'postgresql://',
+  'mysql://',
+  'redis://',
+  'amqp://',
+  'ws://',
+  'wss://'
+];
+
+/** Get or create a cached source file */
+const getCachedSourceFile = (filePath: string): ts.SourceFile => {
+  if (!sourceFileCache.has(filePath)) {
+    sourceFileCache.set(filePath, createSourceFile(filePath));
+  }
+  return sourceFileCache.get(filePath)!;
+};
+
+/** Check if a node represents environment variable access */
+const isEnvAccess = (node: ts.Node): boolean => {
+  const text = node.getText();
+  return ENV_ACCESS_PATTERNS.some(pattern => text.includes(pattern));
+};
+
+/** Get variable name from node */
+const getEnvVarName = (node: ts.PropertyAccessExpression | ts.ElementAccessExpression): string => {
+  if (ts.isPropertyAccessExpression(node)) {
+    return node.name.getText();
+  }
+  const argument = node.argumentExpression;
+  if (ts.isStringLiteral(argument)) {
+    return argument.text;
+  }
+  throw new Error('Unable to determine environment variable name');
+};
+
+/** Check for potential security issues */
+const checkSecurityIssues = (
+  variable: string,
+  location: CodeLocation,
+  result: ProcessingResult
+): void => {
+  // Check for sensitive variables
+  if (ENV_VAR_PATTERNS.sensitive.test(variable)) {
+    result.warnings.push(new EnvWarning(
+      variable,
+      location,
+      `Environment variable ${variable} appears to contain sensitive information. Ensure it's properly secured.`
+    ));
+  }
+
+  // Check for URL variables without valid protocol
+  if (ENV_VAR_PATTERNS.url.test(variable)) {
+    const value = process.env[variable];
+    if (value && !VALID_URL_PROTOCOLS.some(protocol => value.startsWith(protocol))) {
+      result.warnings.push(new EnvWarning(
+        variable,
+        location,
+        `URL environment variable ${variable} should include a valid protocol (${VALID_URL_PROTOCOLS.join(', ')}).`
+      ));
+    }
+  }
+
+  // Check for port variables with non-numeric values
+  if (ENV_VAR_PATTERNS.port.test(variable)) {
+    const value = process.env[variable];
+    if (value && isNaN(Number(value))) {
+      result.warnings.push(new EnvWarning(
+        variable,
+        location,
+        `Port environment variable ${variable} should be a number.`
+      ));
+    }
+  }
+};
+
+/** Find and check environment variables in a TypeScript source file */
 const findEnvVariables = (
   sourceFile: ts.SourceFile, 
   log: Logger, 
@@ -20,37 +118,46 @@ const findEnvVariables = (
 ): number => {
   let errorCount = 0;
 
-  // Recursive function to visit all nodes in the AST
   const visitor = (node: ts.Node): void => {
     try {
-      // Check if the node is accessing process.env
-      if (ts.isPropertyAccessExpression(node) &&
-          node.expression.getText() === 'process.env') {
-        const envVar = node.name.getText();
-        // Process each env variable only once
-        if (!result.checkedVariables.has(envVar)) {
-          result.checkedVariables.add(envVar);
-          log('debug', `Checking environment variable: ${envVar}`);
-          
-          const checkResult = checkEnvVariable(envVar, node, sourceFile, showDefaultValues);
-          if (!checkResult.exists) {
-            errorCount++;
-            result.errors.push(new EnvError(
-              checkResult.variable,
-              checkResult.location,
-              `Missing required environment variable: ${envVar}`
-            ));
-          } else if (checkResult.defaultValue) {
-            result.warnings.push(new EnvWarning(
-              checkResult.variable,
-              checkResult.location,
-              `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`
-            ));
+      if ((ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) && 
+          isEnvAccess(node.expression)) {
+        try {
+          const envVar = getEnvVarName(node);
+          if (!result.checkedVariables.has(envVar)) {
+            result.checkedVariables.add(envVar);
+            log('debug', `Checking environment variable: ${envVar}`);
+            
+            const checkResult = checkEnvVariable(envVar, node, sourceFile, showDefaultValues);
+            
+            // Check for missing variables
+            if (!checkResult.exists) {
+              errorCount++;
+              result.errors.push(new EnvError(
+                checkResult.variable,
+                checkResult.location,
+                `Missing required environment variable: ${envVar}`
+              ));
+            }
+            
+            // Check for default values
+            if (checkResult.defaultValue) {
+              result.warnings.push(new EnvWarning(
+                checkResult.variable,
+                checkResult.location,
+                `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`
+              ));
+            }
+
+            // Perform security checks
+            checkSecurityIssues(envVar, checkResult.location, result);
           }
+        } catch (error) {
+          log('error', `Error processing environment variable: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
     } catch (error) {
-      log('error', `Error processing node: ${error instanceof Error ? error.message : String(error)}`);
+      log('error', `Error visiting node: ${error instanceof Error ? error.message : String(error)}`);
       if (error instanceof Error) {
         result.errors.push(new EnvError(
           'unknown',
@@ -59,16 +166,14 @@ const findEnvVariables = (
         ));
       }
     }
-    // Continue traversing the AST
     ts.forEachChild(node, visitor);
   };
 
-  // Start the AST traversal
   ts.forEachChild(sourceFile, visitor);
   return errorCount;
 };
 
-// Function to get location information from a node
+/** Get location information from a node */
 const getNodeLocation = (node: ts.Node, sourceFile: ts.SourceFile): CodeLocation => {
   const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
   return {
@@ -78,7 +183,7 @@ const getNodeLocation = (node: ts.Node, sourceFile: ts.SourceFile): CodeLocation
   };
 };
 
-// Function to check a single environment variable
+/** Check a single environment variable */
 const checkEnvVariable = (
   variable: string,
   node: ts.Node,
@@ -89,12 +194,22 @@ const checkEnvVariable = (
   const value = process.env[variable];
   const exists = value !== undefined && value.trim() !== "";
   
-  // Check for default value in parent node
+  // Check for default values in various patterns
   let defaultValue: string | undefined;
-  if (showDefaultValues && node.parent && ts.isBinaryExpression(node.parent)) {
-    const parentNode = node.parent;
-    if (parentNode.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
-      defaultValue = parentNode.right.getText();
+  if (showDefaultValues && node.parent) {
+    if (ts.isBinaryExpression(node.parent)) {
+      const parentNode = node.parent;
+      if (parentNode.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
+          parentNode.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken) {
+        defaultValue = parentNode.right.getText();
+      }
+    } else if (ts.isConditionalExpression(node.parent)) {
+      // Handle ternary operator
+      const parentNode = node.parent;
+      if (ts.isPropertyAccessExpression(parentNode.condition) &&
+          parentNode.condition === node) {
+        defaultValue = parentNode.whenFalse.getText();
+      }
     }
   }
 
@@ -107,7 +222,7 @@ const checkEnvVariable = (
   };
 };
 
-// Main function to process multiple files
+/** Process multiple files */
 export const processFiles = (
   files: string[],
   log: Logger,
@@ -120,11 +235,31 @@ export const processFiles = (
     errorCount: 0
   };
 
-  // Process each file
-  for (const file of files) {
-    const sourceFile = createSourceFile(file);
-    const fileErrorCount = findEnvVariables(sourceFile, log, result, showDefaultValues);
-    result.errorCount = (result.errorCount || 0) + fileErrorCount;
+  // Process files in chunks for better memory management
+  const CHUNK_SIZE = 50;
+  for (let i = 0; i < files.length; i += CHUNK_SIZE) {
+    const chunk = files.slice(i, i + CHUNK_SIZE);
+    
+    for (const file of chunk) {
+      try {
+        const sourceFile = getCachedSourceFile(file);
+        const fileErrorCount = findEnvVariables(sourceFile, log, result, showDefaultValues);
+        result.errorCount += fileErrorCount;
+      } catch (error) {
+        log('error', `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`);
+        if (error instanceof Error) {
+          result.errors.push(new EnvError(
+            'unknown',
+            { filePath: file, line: 0, column: 0 },
+            `Failed to process file: ${error.message}`
+          ));
+          result.errorCount++;
+        }
+      }
+    }
+
+    // Clear cache after each chunk to manage memory
+    sourceFileCache.clear();
   }
 
   return result;
