@@ -82,6 +82,56 @@ gardisto({
 }, './path/to/project/root');
 ```
 
+## 🚀 Running the Example
+
+To try out Gardisto with the provided example project, follow these steps:
+
+1. **Build and Link the Package**
+   ```bash
+   # Build the package
+   npm run build
+
+   # Create a global link
+   npm link
+   ```
+
+2. **Set Up the Example Project**
+   ```bash
+   # Navigate to the example directory
+   cd example
+
+   # Link to the local gardisto package
+   npm link gardisto
+   ```
+
+3. **Run the Example**
+   
+   The example project includes three test scenarios:
+
+   ```bash
+   # Run with all environment variables set
+   npm run test:complete
+
+   # Run with some missing environment variables
+   npm run test:partial
+
+   # Run with no environment variables
+   npm run test:missing
+   ```
+
+   The test scripts demonstrate how Gardisto behaves with:
+   - Complete environment configuration (`test:complete`)
+   - Partial environment configuration (`test:partial`)
+   - Missing environment variables (`test:missing`)
+
+4. **Expected Output**
+   
+   When running `test:complete`, you should see:
+   - Environment variable checks
+   - Debug logs (if enabled)
+   - Warnings for any variables using default values
+   - Success message if all required variables are present
+
 ## 🏆 Acknowledgements
 
 - Built with TypeScript
