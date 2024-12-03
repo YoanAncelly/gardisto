@@ -53,6 +53,186 @@ Gardisto (from Esperanto, meaning "Guardian") is a TypeScript utility that helps
 [Jest-badge]: https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white
 [Jest-url]: https://jestjs.io/
 
+## 📖 API Reference
+
+### `gardisto(options?: GardistoOptions)`
+
+Main function to check environment variables in your project.
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `debug` | `boolean` | `false` | Enable debug logging for detailed information |
+| `include` | `string[]` | `[]` | Glob patterns for files to include |
+| `exclude` | `string[]` | `[]` | Glob patterns for files to exclude |
+| `showDefaultValues` | `boolean` | `false` | Show default values in warnings |
+| `projectPath` | `string` | `process.cwd()` | Root path of the project to analyze |
+
+#### Example with All Options
+
+```typescript
+import { gardisto } from 'gardisto';
+
+gardisto({
+  // Enable debug mode for verbose logging
+  debug: true,
+  
+  // Only check files in src and config directories
+  include: ['src/**/*.ts', 'config/**/*.ts'],
+  
+  // Exclude test files and generated code
+  exclude: [
+    '**/*.test.ts',
+    '**/*.spec.ts',
+    '**/dist/**',
+    '**/node_modules/**'
+  ],
+  
+  // Show default values in warnings
+  showDefaultValues: true,
+  
+  // Custom project path
+  projectPath: './my-project'
+});
+```
+
+### Error Handling
+
+Gardisto provides detailed error messages with file locations:
+
+```typescript
+// Missing required environment variable
+Error: Missing required environment variable: API_KEY
+at src/config.ts:10:15
+
+// Warning for default value usage
+Warning: Environment variable DATABASE_URL uses a default value: "localhost:5432"
+at src/database.ts:5:20
+```
+
+### Advanced Usage
+
+#### Custom Logger Configuration
+
+```typescript
+import { createLogger } from 'gardisto';
+
+const logger = createLogger({
+  debug: true,
+  minLevel: 'info',
+  maxLength: 5000,
+  colorize: true
+});
+
+// Use the logger
+logger('info', 'Starting environment check...');
+logger('error', new Error('Failed to read .env file'));
+```
+
+#### Programmatic Usage
+
+```typescript
+import { gardisto } from 'gardisto';
+
+async function validateEnvironment() {
+  try {
+    const result = gardisto({
+      debug: true,
+      include: ['src/**/*.ts']
+    });
+
+    // Handle results
+    if (result.errors.length > 0) {
+      console.error('Environment validation failed!');
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('Failed to validate environment:', error);
+    process.exit(1);
+  }
+}
+```
+
+### Best Practices
+
+1. **CI/CD Integration**
+   ```yaml
+   # GitHub Actions example
+   jobs:
+     validate-env:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - uses: actions/setup-node@v2
+         - run: npm install gardisto
+         - run: npx gardisto
+   ```
+
+2. **Pre-commit Hook**
+   ```json
+   {
+     "husky": {
+       "hooks": {
+         "pre-commit": "gardisto"
+       }
+     }
+   }
+   ```
+
+3. **Environment Variable Patterns**
+   ```typescript
+   // Good - Easy to detect
+   const apiKey = process.env.API_KEY;
+   
+   // Good - Default value is visible
+   const port = process.env.PORT || '3000';
+   
+   // Avoid - Hard to detect
+   const config = {
+     key: process[['env']]['API_KEY']
+   };
+   ```
+
+### Common Issues and Solutions
+
+#### Missing Environment Variables
+
+Problem:
+```
+Error: Missing required environment variable: API_KEY
+```
+
+Solution:
+1. Add the variable to your `.env` file
+2. Set the variable in your environment
+3. Or add a default value if appropriate
+
+#### Default Value Warnings
+
+Warning:
+```
+Warning: Environment variable PORT uses a default value: "3000"
+```
+
+Solutions:
+1. Set the variable explicitly if needed
+2. Ignore if the default is acceptable
+3. Document the default in your README
+
+#### Type Safety
+
+For better type safety, use type assertions:
+
+```typescript
+const port = process.env.PORT || '3000';
+const numericPort = parseInt(port, 10);
+
+if (isNaN(numericPort)) {
+  throw new Error('PORT must be a valid number');
+}
+```
+
 ## ⚙️ Setup
 
 ### Installation
@@ -151,5 +331,13 @@ We welcome contributions! Here's how you can help:
 ## 📖 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Support
+
+Need help? Found a bug? Have a feature request?
+
+- 📫 Open an [issue](https://github.com/yoanancelly/gardisto/issues)
+- 💬 Start a [discussion](https://github.com/yoanancelly/gardisto/discussions)
+- ⭐ Star the project if you find it useful!
 
 <p align="right"><a href="#readme-top">Back to top ⬆️</a></p>
