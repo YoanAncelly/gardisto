@@ -48,9 +48,13 @@ export const createLogger = (options: LoggerOptions | boolean): Logger => {
     if (value === null) return 'null';
     if (value === undefined) return 'undefined';
     if (value instanceof Error) {
+      const errorMessage = (value as Error).message || 'Unknown error';
+      const errorName = (value as Error).name || 'Error';
+      const errorStack = (value as Error).stack;
+
       return isGardistoError(value)
-        ? `${value.name}: ${value.message}`
-        : `Error: ${value.message}${value.stack ? `\n${value.stack}` : ''}`;
+        ? `${errorName}: ${errorMessage}`
+        : `${errorName}: ${errorMessage}${errorStack ? `\n${errorStack}` : ''}`;
     }
     if (typeof value === 'object') {
       try {
