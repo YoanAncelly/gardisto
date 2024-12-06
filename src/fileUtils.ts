@@ -21,7 +21,7 @@ export const getAllJSAndTSFiles = (
   include: string[] = [],
   exclude: string[] = []
 ): string[] => {
-  log(`Checking environment variables in project path: ${dir}`);
+  log('info', `Checking environment variables in project path: ${dir}`);
   const files: string[] = [];
 
   // Helper function to check if a file path is excluded
@@ -46,7 +46,7 @@ export const getAllJSAndTSFiles = (
       // Skip excluded paths
       if (isExcluded(relativePath)) {
         if (isTopLevel) {
-          log(`Skipping excluded path: ${relativePath}`);
+          log('info', `Skipping excluded path: ${relativePath}`);
         }
         continue;
       }
