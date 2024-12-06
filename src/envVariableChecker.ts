@@ -1,16 +1,13 @@
 import * as ts from "typescript";
-import { 
-  Logger, 
-  EnvCheckResult, 
-  CodeLocation, 
+import {
+  Logger,
+  EnvCheckResult,
+  CodeLocation,
   ProcessingResult,
   EnvError,
   EnvWarning,
-  isGardistoError,
-  LogLevel 
 } from './types';
 import { createSourceFile } from "./fileUtils";
-import fs from "fs";
 
 /** Cache for parsed source files to improve performance */
 const sourceFileCache = new Map<string, ts.SourceFile>();
@@ -115,8 +112,8 @@ const checkSecurityIssues = (
 
 /** Find and check environment variables in a TypeScript source file */
 const findEnvVariables = (
-  sourceFile: ts.SourceFile, 
-  log: Logger, 
+  sourceFile: ts.SourceFile,
+  log: Logger,
   result: ProcessingResult,
   showDefaultValues: boolean
 ): number => {
@@ -124,16 +121,16 @@ const findEnvVariables = (
 
   const visitor = (node: ts.Node): void => {
     try {
-      if ((ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) && 
+      if ((ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) &&
           isEnvAccess(node.expression)) {
         try {
           const envVar = getEnvVarName(node);
           if (!result.checkedVariables.has(envVar)) {
             result.checkedVariables.add(envVar);
             log('debug', `Checking environment variable: ${envVar}`);
-            
+
             const checkResult = checkEnvVariable(envVar, node, sourceFile, showDefaultValues);
-            
+
             // Check for missing variables
             if (!checkResult.exists) {
               errorCount++;
@@ -144,7 +141,7 @@ const findEnvVariables = (
                 showDefaultValues
               ));
             }
-            
+
             // Check for default values
             if (checkResult.defaultValue) {
               result.warnings.push(new EnvWarning(
@@ -200,7 +197,7 @@ const checkEnvVariable = (
   const location = getNodeLocation(node, sourceFile);
   const value = process.env[variable];
   const exists = value !== undefined && value.trim() !== "";
-  
+
   // Check for default values in various patterns
   let defaultValue: string | undefined;
   if (showDefaultValues && node.parent) {
@@ -246,7 +243,7 @@ export const processFiles = (
   const CHUNK_SIZE = 50;
   for (let i = 0; i < files.length; i += CHUNK_SIZE) {
     const chunk = files.slice(i, i + CHUNK_SIZE);
-    
+
     for (const file of chunk) {
       try {
         const sourceFile = getCachedSourceFile(file);
