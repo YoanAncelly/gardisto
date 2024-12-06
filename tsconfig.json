@@ -10,7 +10,11 @@
 		"declaration": true,
 		"isolatedModules": true,
 		"noEmit": true,
-		"outDir": "dist"
+		"outDir": "dist",
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true
 	},
 	"include": ["src", "**/__tests__/*"],
 	"exclude": ["node_modules"]
