@@ -1,14 +1,17 @@
+/** Types for error handling */
+import type { GardistoError, EnvironmentError, ConfigurationError, FileSystemError, ValidationError } from './errors';
+
 /** Options for configuring Gardisto's behavior */
 export interface GardistoOptions {
   /** Enable debug mode for verbose logging */
   debug?: boolean;
-  /** Glob patterns to include specific files/directories */
+  /** List of file patterns to include */
   include?: string[];
-  /** Glob patterns to exclude specific files/directories */
+  /** List of file patterns to exclude */
   exclude?: string[];
-  /** Show default values in environment variable warnings */
+  /** Show default values in output */
   showDefaultValues?: boolean;
-  /** Root path of the project to analyze */
+  /** Path to the project root */
   projectPath?: string;
 }
 
@@ -16,19 +19,19 @@ export interface GardistoOptions {
 export interface EnvCheckResult {
   /** Name of the environment variable */
   variable: string;
-  /** Whether the environment variable exists and has a non-empty value */
+  /** Whether the variable exists */
   exists: boolean;
-  /** Current value of the environment variable (if it exists) */
+  /** Current value of the variable */
   value?: string;
-  /** Location where the environment variable is referenced */
+  /** Location where the variable is used */
   location: CodeLocation;
-  /** Default value specified in code (if any) */
+  /** Default value if one is specified */
   defaultValue?: string;
 }
 
 /** Location information for code references */
 export interface CodeLocation {
-  /** Absolute path to the file */
+  /** Path to the file */
   filePath: string;
   /** Line number (1-based) */
   line: number;
@@ -39,70 +42,43 @@ export interface CodeLocation {
 /** Results from processing all files */
 export interface ProcessingResult {
   /** List of errors found during processing */
-  errors: EnvError[];
+  errors: EnvironmentError[];
   /** List of warnings found during processing */
   warnings: EnvWarning[];
   /** Total number of errors found */
   errorCount: number;
-  /** Set of environment variables that have been checked */
+  /** Set of environment variables that were checked */
   checkedVariables: Set<string>;
 }
 
-/** Base error class for Gardisto-specific errors */
-export class GardistoError extends Error {
-  constructor(message: string, debug: boolean = false) {
-    super(message);
-    this.name = 'GardistoError';
-    // Restore prototype chain
-    Object.setPrototypeOf(this, new.target.prototype);
-    // Only capture stack trace in debug mode
-    if (!debug) {
-      delete this.stack;
-    }
-  }
-}
-
-/** Error class for environment variable issues */
-export class EnvError extends GardistoError {
-  constructor(
-    /** Name of the environment variable */
-    public readonly variable: string,
-    /** Location where the error occurred */
-    public readonly location: CodeLocation,
-    message: string,
-    debug: boolean = false
-  ) {
-    super(message, debug);
-    this.name = 'EnvError';
-    // Restore prototype chain
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
-
 /** Warning class for environment variable issues */
-export class EnvWarning extends GardistoError {
+export class EnvWarning {
   constructor(
     /** Name of the environment variable */
     public readonly variable: string,
     /** Location where the warning occurred */
     public readonly location: CodeLocation,
-    message: string,
+    /** Warning message */
+    public readonly message: string,
     debug: boolean = false
   ) {
-    super(message, debug);
     this.name = 'EnvWarning';
-    // Restore prototype chain
-    Object.setPrototypeOf(this, new.target.prototype);
+  }
+  
+  public readonly name: string;
+
+  toString(): string {
+    return `${this.name}: ${this.message} (${this.variable} at ${this.location.filePath}:${this.location.line}:${this.location.column})`;
   }
 }
 
 /** Required configuration after resolving optional values */
-export interface GardistoConfig extends Required<Omit<GardistoOptions, 'debug' | 'showDefaultValues'>> {
-  /** Root path of the project to analyze */
+export interface GardistoConfig {
+  /** Path to the project root */
   projectPath: string;
-  /** Glob patterns to include specific files/directories */
+  /** List of file patterns to include */
   include: string[];
-  /** Glob patterns to exclude specific files/directories */
+  /** List of file patterns to exclude */
   exclude: string[];
 }
 
@@ -114,12 +90,8 @@ export type Logger = (level: LogLevel, ...args: unknown[]) => void;
 
 /** Type guard for checking if a value is a GardistoError */
 export function isGardistoError(error: unknown): error is GardistoError {
+  const { GardistoError } = require('./errors');
   return error instanceof GardistoError;
-}
-
-/** Type guard for checking if a value is an EnvError */
-export function isEnvError(error: unknown): error is EnvError {
-  return error instanceof EnvError;
 }
 
 /** Type guard for checking if a value is an EnvWarning */
