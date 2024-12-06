@@ -15,10 +15,13 @@ export interface GardistoOptions {
   projectPath?: string;
 }
 
+/** Branded type for environment variable names */
+type EnvVarName = string & { readonly brand: unique symbol; }
+
 /** Result of checking a single environment variable */
 export interface EnvCheckResult {
   /** Name of the environment variable */
-  variable: string;
+  variable: EnvVarName;
   /** Whether the variable exists */
   exists: boolean;
   /** Current value of the variable */
@@ -55,7 +58,7 @@ export interface ProcessingResult {
 export class EnvWarning {
   constructor(
     /** Name of the environment variable */
-    public readonly variable: string,
+    public readonly variable: EnvVarName,
     /** Location where the warning occurred */
     public readonly location: CodeLocation,
     /** Warning message */
