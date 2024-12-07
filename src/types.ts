@@ -44,14 +44,14 @@ export interface CodeLocation {
 
 /** Results from processing all files */
 export interface ProcessingResult {
-  /** List of errors found during processing */
-  errors: EnvironmentError[];
+  /** Array of errors encountered during processing */
+  errors: Array<EnvironmentError>;
   /** List of warnings found during processing */
   warnings: EnvWarning[];
   /** Total number of errors found */
   errorCount: number;
   /** Set of environment variables that were checked */
-  checkedVariables: Set<string>;
+  checkedVariables: Set<EnvVarName>;
 }
 
 /** Warning class for environment variable issues */
@@ -86,10 +86,15 @@ export interface GardistoConfig {
 }
 
 /** Available log levels */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export enum LogLevel {
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+  DEBUG = 'debug'
+}
 
 /** Logger function type */
-export type Logger = (level: LogLevel, ...args: unknown[]) => void;
+export type Logger = (level: LogLevel, message: string) => void;
 
 /** Type guard for checking if a value is a GardistoError */
 export function isGardistoError(error: unknown): error is GardistoError {
