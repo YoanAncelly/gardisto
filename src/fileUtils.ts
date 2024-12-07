@@ -18,8 +18,8 @@ const isMatch = (filePath: string, pattern: string): boolean => {
 export const getAllJSAndTSFiles = (
   dir: string,
   log: Logger,
-  include: string[] = [],
-  exclude: string[] = []
+  include: Array<`*.${string}`> = [],
+  exclude: Array<`*.${string}`> = []
 ): string[] => {
   log('info', `Checking environment variables in project path: ${dir}`);
   const files: string[] = [];
