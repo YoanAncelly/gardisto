@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Logger } from './types';
+import { Logger, LogLevel } from './types';
 import ts from "typescript";
 
 // Helper function to check if a file path matches a given pattern
@@ -21,7 +21,7 @@ export const getAllJSAndTSFiles = (
   include: Array<`*.${string}`> = [],
   exclude: Array<`*.${string}`> = []
 ): string[] => {
-  log('info', `Checking environment variables in project path: ${dir}`);
+  log(LogLevel.INFO, `Checking environment variables in project path: ${dir}`);
   const files: string[] = [];
 
   // Helper function to check if a file path is excluded
@@ -46,7 +46,7 @@ export const getAllJSAndTSFiles = (
       // Skip excluded paths
       if (isExcluded(relativePath)) {
         if (isTopLevel) {
-          log('info', `Skipping excluded path: ${relativePath}`);
+          log(LogLevel.INFO, `Skipping excluded path: ${relativePath}`);
         }
         continue;
       }
