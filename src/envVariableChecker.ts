@@ -127,9 +127,9 @@ const findEnvVariables = (
           isEnvAccess(node.expression)) {
         try {
           const envVar = getEnvVarName(node);
-          if (!result.checkedVariables.has(envVar)) {
-            result.checkedVariables.add(envVar);
-            log('debug', `Checking environment variable: ${envVar}`);
+          if (!result.checkedVariables.has(createEnvVarName(envVar))) {
+            result.checkedVariables.add(createEnvVarName(envVar));
+            log(LogLevel.DEBUG, `Checking environment variable: ${envVar}`);
 
             const checkResult = checkEnvVariable(envVar, node, sourceFile, showDefaultValues);
 
@@ -148,7 +148,7 @@ const findEnvVariables = (
             // Check for default values
             if (checkResult.defaultValue) {
               result.warnings.push(new EnvWarning(
-                createEnvVarName(checkResult.variable),
+                createEnvVarName(envVar),
                 checkResult.location,
                 `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`,
                 showDefaultValues
@@ -159,11 +159,11 @@ const findEnvVariables = (
             checkSecurityIssues(envVar, checkResult.location, result, showDefaultValues);
           }
         } catch (error) {
-          log('error', `Error processing environment variable: ${error instanceof Error ? error.message : String(error)}`);
+          log(LogLevel.ERROR, `Error processing environment variable: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
     } catch (error) {
-      log('error', `Error visiting node: ${error instanceof Error ? error.message : String(error)}`);
+      log(LogLevel.ERROR, `Error visiting node: ${error instanceof Error ? error.message : String(error)}`);
       if (error instanceof Error) {
         result.errors.push(new EnvironmentError(
           `Error processing AST node: ${error.message}`,
@@ -221,7 +221,7 @@ const checkEnvVariable = (
   }
 
   return {
-    variable,
+    variable: createEnvVarName(variable),
     exists,
     value: exists ? value : undefined,
     location,
