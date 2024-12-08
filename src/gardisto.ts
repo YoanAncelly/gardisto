@@ -9,20 +9,22 @@ export const handleResults = (errors: any[], warnings: any[], errorCount: number
   // Display warnings if any
   if (warnings.length > 0) {
     console.warn("Warnings for environment variables:");
-    warnings.forEach((warning) => {
-      const message = warning.toString().split('\n')[0]; // Only take the first line (the message)
-      console.warn(message);
-    });
+    // Process warnings in batches and join them
+    const warningMessages = warnings.map(warning => 
+      warning != null ? warning.toString().split('\n')[0] : 'Undefined warning'
+    );
+    console.warn(warningMessages.join('\n'));
     console.warn(); // Add blank line for readability
   }
 
   // Display errors if any, and exit the process with an error code
   if (errorCount > 0) {
     console.error("Errors found in environment variables:");
-    errors.forEach((error) => {
-      const message = error.toString().split('\n')[0]; // Only take the first line (the message)
-      console.error(message);
-    });
+    // Process errors in batches and join them
+    const errorMessages = errors.map(error => 
+      error != null ? error.toString().split('\n')[0] : 'Undefined error'
+    );
+    console.error(errorMessages.join('\n'));
     console.error(); // Add blank line for readability
     process.exit(1); // Exit with error code
   } else if (warnings.length === 0) {
