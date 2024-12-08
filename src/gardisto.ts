@@ -1,4 +1,4 @@
-import { GardistoOptions } from "./types";
+import { GardistoOptions, LogLevel } from "./types";
 import { createLogger } from "./logger";
 import { getAllJSAndTSFiles } from "./fileUtils";
 import { processFiles } from "./envVariableChecker";
@@ -40,16 +40,16 @@ export const gardisto = (options: GardistoOptions = {}): void => {
   const projectPath = options.projectPath ?? process.cwd();
   const absoluteProjectPath = path.resolve(projectPath);
 
-  log('info', `Checking environment variables in project path: ${absoluteProjectPath}`);
+  log(LogLevel.INFO, `Checking environment variables in project path: ${absoluteProjectPath}`);
 
   // Get all JavaScript and TypeScript files in the project
   const files = getAllJSAndTSFiles(
     absoluteProjectPath,
     log,
-    options.include ?? [],
-    options.exclude ?? []
+    options.include as Array<`*.${string}`> ?? [],
+    options.exclude as Array<`*.${string}`> ?? []
   );
-  log('info', `Processing ${files.length} JS/TS files`);
+  log(LogLevel.INFO, `Processing ${files.length} JS/TS files`);
 
   // Process the files and check for environment variable issues
   const { errors, warnings, errorCount } = processFiles(
