@@ -18,6 +18,11 @@ export interface GardistoOptions {
 /** Branded type for environment variable names */
 type EnvVarName = string & { readonly brand: unique symbol; }
 
+/** Helper function to create EnvVarName from string */
+export function createEnvVarName(name: string): EnvVarName {
+  return name as EnvVarName;
+}
+
 /** Result of checking a single environment variable */
 export interface EnvCheckResult {
   /** Name of the environment variable */

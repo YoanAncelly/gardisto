@@ -5,6 +5,8 @@ import {
   CodeLocation,
   ProcessingResult,
   EnvWarning,
+  LogLevel,
+  createEnvVarName
 } from './types';
 import { createSourceFile } from "./fileUtils";
 import { EnvironmentError } from "./errors";
@@ -76,7 +78,7 @@ const checkSecurityIssues = (
   // Check for sensitive variables
   if (ENV_VAR_PATTERNS.sensitive.test(variable)) {
     result.warnings.push(new EnvWarning(
-      variable,
+      createEnvVarName(variable),
       location,
       `Environment variable ${variable} appears to contain sensitive information. Ensure it's properly secured.`,
       debug
@@ -88,7 +90,7 @@ const checkSecurityIssues = (
     const value = process.env[variable];
     if (value && !VALID_URL_PROTOCOLS.some(protocol => value.startsWith(protocol))) {
       result.warnings.push(new EnvWarning(
-        variable,
+        createEnvVarName(variable),
         location,
         `URL environment variable ${variable} should include a valid protocol (${VALID_URL_PROTOCOLS.join(', ')}).`,
         debug
@@ -101,7 +103,7 @@ const checkSecurityIssues = (
     const value = process.env[variable];
     if (value && isNaN(Number(value))) {
       result.warnings.push(new EnvWarning(
-        variable,
+        createEnvVarName(variable),
         location,
         `Port environment variable ${variable} should be a number.`,
         debug
@@ -146,7 +148,7 @@ const findEnvVariables = (
             // Check for default values
             if (checkResult.defaultValue) {
               result.warnings.push(new EnvWarning(
-                checkResult.variable,
+                createEnvVarName(checkResult.variable),
                 checkResult.location,
                 `Environment variable ${envVar} uses a default value: ${checkResult.defaultValue}`,
                 showDefaultValues
@@ -251,7 +253,7 @@ export const processFiles = (
         const fileErrorCount = findEnvVariables(sourceFile, log, result, showDefaultValues);
         result.errorCount += fileErrorCount;
       } catch (error) {
-        log('error', `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`);
+        log(LogLevel.ERROR, `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`);
         if (error instanceof Error) {
           const fileError = new EnvironmentError(
             `Failed to process file: ${error.message}`,
