@@ -114,4 +114,67 @@ describe('handleResults', () => {
     expect(consoleLogSpy).not.toHaveBeenCalledWith('No environment variable issues found.');
     consoleLogSpy.mockRestore();
   });
+
+  // Warning messages display even if errors exist
+  it('should display warnings even when errors exist', () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn');
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const errors = ['Error 1', 'Error 2'];
+    const warnings = ['Warning 1', 'Warning 2'];
+    const errorCount = errors.length;
+
+    handleResults(errors, warnings, errorCount);
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Warnings for environment variables:');
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Warning 1\nWarning 2');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Errors found in environment variables:');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error 1\nError 2');
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    consoleWarnSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    processExitSpy.mockRestore();
+  });
+
+  // Blank lines are added after warnings and errors blocks
+  it('should add blank lines after warnings and errors blocks', () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn');
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    handleResults(['Error 1'], ['Warning 1'], 1);
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith();
+    expect(consoleErrorSpy).toHaveBeenCalledWith();
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    consoleWarnSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    processExitSpy.mockRestore();
+  });
+
+  // Console output formatting remains consistent across all cases
+  it('should display warnings and errors correctly when both exist', () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn');
+    const consoleErrorSpy = jest.spyOn(console, 'error');
+    const processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    const warnings = ['Warning 1', 'Warning 2'];
+    const errors = ['Error 1', 'Error 2'];
+    const errorCount = 2;
+
+    handleResults(errors, warnings, errorCount);
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Warnings for environment variables:');
+    expect(consoleWarnSpy).toHaveBeenCalledWith('Warning 1\nWarning 2');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Errors found in environment variables:');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error 1\nError 2');
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    consoleWarnSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    processExitSpy.mockRestore();
+  });
 });
