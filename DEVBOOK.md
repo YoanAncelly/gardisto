@@ -8,12 +8,12 @@ This document tracks the development progress of Gardisto following Test-Driven 
 - ✅ Basic project structure
 - ✅ Core files created in `src/`
 - ✅ Initial test setup with Jest
-- 🏗️ Partial test coverage (only `gardisto.test.ts`)
+- 🏗️ Partial test coverage (envVariableChecker.test.ts, errors.test.ts)
 
 #### Immediate Next Steps
 1. Create test suites for existing modules:
    - ✅ envVariableChecker.test.ts
-   - [ ] errors.test.ts
+   - ✅ errors.test.ts
    - [ ] fileUtils.test.ts
    - [ ] logger.test.ts
    - [ ] types.test.ts
@@ -40,21 +40,21 @@ Rule: TDD Workflow - Write one test at a time
   - [x] Variable parsing logic
   - [x] Basic validation functionality
 
-### Phase 2: Error Handling System ⏳
+### Phase 2: Error Handling System ✅
 Rules: 
 - Error Handling - Use custom error classes
 - TypeScript Guidelines - Implement proper error types
 
 #### Tasks
-- [ ] Error Handling Tests
-  - [ ] Test custom error classes
-  - [ ] Test error message formatting
-  - [ ] Test error context inclusion
+- [x] Error Handling Tests
+  - [x] Test custom error classes
+  - [x] Test error message formatting
+  - [x] Test error context inclusion
 
-- [ ] Implementation (errors.ts)
-  - [ ] Custom error classes
-  - [ ] Error context handling
-  - [ ] Error message formatting
+- [x] Implementation (errors.ts)
+  - [x] Custom error classes (GardistoError, ConfigurationError, FileSystemError, EnvironmentError, ValidationError)
+  - [x] Error context handling through constructor parameters
+  - [x] Error message formatting with toJSON method
 
 ### Phase 3: File System Operations ⏳
 Rules:
