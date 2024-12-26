@@ -121,3 +121,7 @@ Gardisto is a TypeScript utility for automatically checking and verifying enviro
   - Mock external dependencies
   - Use test doubles appropriately
   - Maintain test readability
+
+## DEVBOOK
+
+Update the DEVBOOK.md file to track the development progress of Gardisto following Test-Driven Development principles.
